@@ -2,57 +2,69 @@
 #include <stdlib.h>
 #include "cll.h"
 
-static void cll_debug(cll_t* tail, const char* _format);
-
 int main(int argc, char *argv[]) {
-	cll_t* TAIL = cll_new("Hello Idiot", NULL);
-	cll_push_new(TAIL, "SECOND");
-	cll_push_new(TAIL, "THIRD");
-	cll_push_new(TAIL, "FOURTH");
-	cll_push_new(TAIL, "FIFTH");
-	cll_push_new(TAIL, "SIXTH");
+	cll_t* head = cll_new("Hello Idiot", NULL);
+	cll_push_back(head, "SECOND");
+	cll_push_back(head, "THIRD");
+	cll_push_back(head, "FOURTH");
+	cll_push_back(head, "FIFTH");
+	cll_push_back(head, "SIXTH");
 	
-	cll_debug(TAIL, "%s\n");
-	
-	printf("WANTED: %s\n", cll_at(TAIL, 4)->value);
-	
-	// free the memory and exit
-	cll_free(TAIL);
+    cll_debug(head, "%s");
+	cll_push_front(head, "HAHAHA");
+    cll_debug(head, "%s");
+    
+    // free the memory and exit
+	cll_free(head);
 	return 0;
 }
 
 cll_t* cll_new(void* _value, cll_t* _next) {
-	cll_t* _tmp = (cll_t*)malloc(sizeof(cll_t));
-	_tmp->value = _value;
-	_tmp->next = _next;
-	return _tmp;
+	cll_t* tmp = (cll_t*)malloc(sizeof(cll_t));
+	tmp->value = _value;
+	tmp->next = _next;
+	return tmp;
 }
 
+int cll_insert(cll_t* head, void* _value, unsigned int index) {
+    if (head == NULL || _value == NULL) return FALSE;
 
-int cll_push(cll_t* tail, cll_t* ell) {
-	if (tail == NULL || ell == NULL) return FALSE;
+    unsigned int count = 0;
+    cll_t* tmp = head;
+    while (tmp) {
+        if (count == index - 1) break;
+        tmp = tmp->next;
+        count++;
+    }
+
+    tmp->next = cll_new(_value, tmp->next);
+    return TRUE;
+}
+
+int cll_push_back(cll_t* head, void* _value) {
+	if (head == NULL || _value == NULL) return FALSE;
 	
-	// set the tmp to HEAD
-	cll_t* head = tail;
-	while (head) {
-		if (head->next == NULL) break;
-		head = head->next;
+	// set the TAIL
+	cll_t* tail = head;
+	while (tail) {
+		if (tail->next == NULL) break;
+		tail = tail->next;
 	}
 	
-	head->next = ell;
+	tail->next = cll_new(_value, NULL);
 	return TRUE;
 }
 
-int cll_push_new(cll_t* tail, void* _value) {
-	if (tail == NULL || _value == NULL) return FALSE;
-	cll_t* tmp = cll_new(_value, NULL);
-	if (cll_push(tail, tmp)) return FALSE;
-	return TRUE;
+int cll_push_front(cll_t* head, void* _value) {
+    if (head == NULL || _value == NULL) return FALSE;
+    cll_t* temp = cll_new(_value, head);
+    head = temp;
+    return TRUE;
 }
 
-cll_t* cll_at(cll_t* tail, unsigned int index) {
-	if (tail == NULL) return NULL;
-	cll_t* tmp = tail;
+cll_t* cll_at(cll_t* head, unsigned int index) {
+	if (head == NULL) return NULL;
+	cll_t* tmp = head;
 	unsigned int count = 0;
 	
 	while (tmp) {
@@ -64,24 +76,43 @@ cll_t* cll_at(cll_t* tail, unsigned int index) {
 	return NULL;
 }
 
-static void cll_debug(cll_t* tail, const char* _format) {
-	if (tail == NULL) return;
-	
-	cll_t* tmp = tail;
-	unsigned int count = 0;
-	
-	while (tmp) {
-		printf("%p = ", tmp);
-		printf(_format, tmp->value);
-		tmp = tmp->next;
-		count++;
-	}
-	printf("\nELEMENTS = %d\n", count);
-	printf("SIZE     = %d\n\n\n", count * sizeof(cll_t));
+unsigned int cll_length(cll_t* head) {
+    if (head == NULL) return 0;
+    unsigned int count = 0;
+    cll_t* temp = head;
+    while (temp) {
+        temp = temp->next;
+        count++;
+    }
+    return count;
 }
 
-void cll_free(cll_t* tail) {
-	if (tail == NULL) return;
-	if (tail->next != NULL) cll_free(tail->next);
-	free(tail);
+unsigned int cll_size(cll_t* head) {
+    if (head == NULL) return 0;
+    unsigned int sum = 0;
+    cll_t* temp = head;
+    while (temp) {
+        sum += sizeof(temp);
+        temp = temp->next;
+    }
+    return sum;
+}
+
+void cll_debug(cll_t* head, const char* _format) {
+	if (head == NULL) return;
+	
+	cll_t* tmp = head;
+    printf("[");
+	while (tmp) {
+		printf(_format, tmp->value);
+        printf(" ");
+		tmp = tmp->next;
+	}
+    printf("]\n");
+}
+
+void cll_free(cll_t* head) {
+	if (head == NULL) return;
+	if (head->next != NULL) cll_free(head->next);
+	free(head);
 }
